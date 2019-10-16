@@ -1,0 +1,31 @@
+{
+  "name": "countries",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sergio Moura <sergio@moura.ca>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src/ -d lib/",
+    "start": "babel-node src/",
+    "dev": "nodemon --exec babel-node src/index.js"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "engineStrict": true,
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
+    "@babel/preset-flow": "^7.0.0",
+    "babel-eslint": "^10.0.3",
+    "chai": "^4.2.0",
+    "eslint": "^6.5.1",
+    "flow-bin": "^0.109.0",
+    "mocha": "^6.2.1",
+    "nodemon": "^1.19.3"
+  },
+  "dependencies": {
+    "js-yaml": "^3.13.1"
+  }
+}

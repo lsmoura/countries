@@ -1,0 +1,8 @@
+parser: babel-eslint
+
+env:
+  node: true
+
+rules:
+  semi: error
+  no-undef: error
