@@ -3,6 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const getCountries = require('./countries');
+const { format: formatDate } = require('date-fns');
 
 type countryDefinition = {|
   name: string,
@@ -16,7 +17,13 @@ type countryDefinition = {|
 const DATA_ROOT: string = process.env.DATA_PATH || path.join(__dirname, '..', 'data');
 const PORT: string | number = process.env.PORT || 3000;
 
-const message: string = 'Hello World!';
+function gmtTimestamp(): string {
+  const NOW = new Date();
+  const TIME_GMT = NOW.getTime() + NOW.getTimezoneOffset() * 60 * 1000;
+
+  return formatDate(TIME_GMT, "EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+}
+const LAST_MODIFIED = gmtTimestamp();
 
 async function runServer(countries, port) {
   const app = express();
@@ -32,6 +39,7 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
 
@@ -43,6 +51,7 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
 
@@ -54,10 +63,12 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
 
   app.get('/', (req, res) => {
+    res.header('last-modified', LAST_MODIFIED);
     res.json(allCountries);
   });
 
