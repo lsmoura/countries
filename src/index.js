@@ -35,9 +35,20 @@ async function runServer(countries, port) {
     res.json(country);
   });
 
-    app.get('/[a-zA-Z]{3}', (req, res) => {
+  app.get('/[a-zA-Z]{3}', (req, res) => {
     const alpha3: string = req._parsedUrl.pathname.substr(1).toLowerCase();
     const country = countries[alpha3];
+
+    if (!country) {
+      return res.status(404).send('country not found');
+    }
+
+    res.json(country);
+  });
+
+  app.get('/[0-9]{1,3}', (req, res) => {
+    const numberCode: string = parseInt(req._parsedUrl.pathname.substr(1), 10);
+    const country = allCountries.find(c => c.numeric === numberCode);
 
     if (!country) {
       return res.status(404).send('country not found');
