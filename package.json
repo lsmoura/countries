@@ -10,7 +10,7 @@
     "dev": "nodemon --exec babel-node src/index.js"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=12.12"
   },
   "engineStrict": true,
   "devDependencies": {
