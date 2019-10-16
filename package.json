@@ -26,6 +26,8 @@
     "nodemon": "^1.19.3"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "js-yaml": "^3.13.1"
   }
 }
