@@ -1,18 +1,23 @@
-/* @flow */
+/* @flow strict */
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const getCountries = require('./countries');
 const { format: formatDate } = require('date-fns');
 
-type countryDefinition = {|
-  name: string,
-  official_name: string,
-  alpha2: string,
-  alpha3: string,
-  numeric: number,
-  flag: string,
-|};
+import type { AllCountries, CountryDefinition } from './countries';
+
+type ExpressRequest = {
+  _parsedUrl: {
+    pathname: string,
+  },
+};
+type ExpressResponse = {
+  status: (number) => ExpressResponse,
+  header: (string, string | number) => void,
+  json: (Object | Array<mixed> | string | number | null) => void,
+  send: (string) => void,
+};
 
 const DATA_ROOT: string = process.env.DATA_PATH || path.join(__dirname, '..', 'data');
 const PORT: string | number = process.env.PORT || 3000;
@@ -25,7 +30,7 @@ function gmtTimestamp(): string {
 }
 const LAST_MODIFIED = gmtTimestamp();
 
-function countrySort(a, b) {
+function countrySort(a: CountryDefinition, b: CountryDefinition): number {
   try {
     return a.name.localeCompare(b.name);
   } catch(e) {
@@ -49,19 +54,19 @@ function hashString(data: string): number {
   return hash;
 }
 
-async function runServer(countries, port) {
+async function runServer(countries: AllCountries, port) {
   const app = express();
-  const allCountries: Array<countryDefinition> = Object.keys(countries)
-    .map(key => countries[key])
+  const allCountries: Array<CountryDefinition> = Object.keys(countries)
+    .map((key: string) => countries[key])
     .sort(countrySort);
 
   const eTagAll = hashString(JSON.stringify(allCountries));
-  const eTags = {};
+  const eTags: { [string]: number } = {};
   allCountries.forEach(country => {
     eTags[country.alpha3] = hashString(JSON.stringify(country));
   });
 
-  app.get('/[a-zA-Z]{2}', (req, res) => {
+  app.get('/[a-zA-Z]{2}', (req: ExpressRequest, res: ExpressResponse) => {
     const alpha2: string = req._parsedUrl.pathname.substr(1).toLowerCase();
     const country = allCountries.find(c => c.alpha2 === alpha2);
 
@@ -74,7 +79,7 @@ async function runServer(countries, port) {
     res.json(country);
   });
 
-  app.get('/[a-zA-Z]{3}', (req, res) => {
+  app.get('/[a-zA-Z]{3}', (req: ExpressRequest, res: ExpressResponse) => {
     const alpha3: string = req._parsedUrl.pathname.substr(1).toLowerCase();
     const country = countries[alpha3];
 
@@ -87,8 +92,8 @@ async function runServer(countries, port) {
     res.json(country);
   });
 
-  app.get('/[0-9]{1,3}', (req, res) => {
-    const numberCode: string = parseInt(req._parsedUrl.pathname.substr(1), 10);
+  app.get('/[0-9]{1,3}', (req: ExpressRequest, res: ExpressResponse) => {
+    const numberCode: number = parseInt(req._parsedUrl.pathname.substr(1), 10);
     const country = allCountries.find(c => c.numeric === numberCode);
 
     if (!country) {
@@ -100,7 +105,7 @@ async function runServer(countries, port) {
     res.json(country);
   });
 
-  app.get('/', (req, res) => {
+  app.get('/', (req: ExpressRequest, res: ExpressResponse) => {
     res.header('etag', eTagAll);
     res.header('last-modified', LAST_MODIFIED);
     res.json(allCountries);

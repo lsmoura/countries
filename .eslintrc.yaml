@@ -1,8 +1,19 @@
 parser: babel-eslint
 
+plugins:
+  - flowtype
+
 env:
   node: true
+  es6: true
 
 rules:
   semi: error
   no-undef: error
+  flowtype/space-before-generic-bracket:
+    - error
+    - never
+
+settings:
+  flowtype:
+    onlyFilesWithFlowAnnotation: true
