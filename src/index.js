@@ -37,7 +37,7 @@ function countrySort(a, b) {
   }
 }
 
-function hashString(data: string): string {
+function hashString(data: string): number {
   let hash = 0, i, chr;
   if (data.length === 0) return hash;
   for (i = 0; i < data.length; i++) {
