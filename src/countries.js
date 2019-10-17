@@ -19,7 +19,7 @@ async function loadCountries(dir: string): Promise<AllCountries> {
   const countries: Array<{ name: string }> = await fs.opendir(dir);
   const returnValue: AllCountries = {};
 
-  for (const entry of countries) {
+  for await (const entry: CountryDefinition of countries) {
     const yamlPath = path.join(dir, entry.name);
     const yamlDataBuffer = await fs.readFile(yamlPath);
     const yamlData = yamlDataBuffer.toString('utf8');
