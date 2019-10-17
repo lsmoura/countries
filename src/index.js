@@ -25,11 +25,41 @@ function gmtTimestamp(): string {
 }
 const LAST_MODIFIED = gmtTimestamp();
 
+function countrySort(a, b) {
+  try {
+    return a.name.localeCompare(b.name);
+  } catch(e) {
+    console.error('cannot compare');
+    console.error(a);
+    console.error(b);
+
+    return 0;
+  }
+}
+
+function hashString(data: string): number {
+  let hash = 0, i, chr;
+  if (data.length === 0) return hash;
+  for (i = 0; i < data.length; i++) {
+    chr = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash = 0xffff & hash; // Convert to 32bit integer
+  }
+
+  return hash;
+}
+
 async function runServer(countries, port) {
   const app = express();
   const allCountries: Array<countryDefinition> = Object.keys(countries)
     .map(key => countries[key])
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort(countrySort);
+
+  const eTagAll = hashString(JSON.stringify(allCountries));
+  const eTags = {};
+  allCountries.forEach(country => {
+    eTags[country.alpha3] = hashString(JSON.stringify(country));
+  });
 
   app.get('/[a-zA-Z]{2}', (req, res) => {
     const alpha2: string = req._parsedUrl.pathname.substr(1).toLowerCase();
@@ -39,6 +69,7 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('etag', eTags[country.alpha3]);
     res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
@@ -51,6 +82,7 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('etag', eTags[country.alpha3]);
     res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
@@ -63,11 +95,13 @@ async function runServer(countries, port) {
       return res.status(404).send('country not found');
     }
 
+    res.header('etag', eTags[country.alpha3]);
     res.header('last-modified', LAST_MODIFIED);
     res.json(country);
   });
 
   app.get('/', (req, res) => {
+    res.header('etag', eTagAll);
     res.header('last-modified', LAST_MODIFIED);
     res.json(allCountries);
   });
